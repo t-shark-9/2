@@ -14,6 +14,7 @@ import IdeaBuilder from "./pages/IdeaBuilder";
 import Outline from "./pages/Outline";
 import Draft from "./pages/Draft";
 import AdminPage from "./pages/AdminPage";
+import Drawings from "./pages/Drawings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
                 <Route path="/assignment/:id/outline" element={<Outline />} />
                 <Route path="/assignment/:id/draft" element={<Draft />} />
                 <Route path="/admin" element={<AdminPage />} />
+                <Route path="/drawings" element={<Drawings />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Illustration Editor</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>Illustration Editor</h1>
+                <div class="file-menu">
+                    <button id="saveBtn" class="btn"><i class="fas fa-save"></i> Save</button>
+                    <button id="exportBtn" class="btn"><i class="fas fa-download"></i> Export</button>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="undoBtn" class="btn"><i class="fas fa-undo"></i></button>
+                <button id="redoBtn" class="btn"><i class="fas fa-redo"></i></button>
+            </div>
+        </header>
+
+        <!-- Horizontal Toolbar -->
+        <div class="horizontal-toolbar">
+            <!-- Top Row: Tools and Properties -->
+            <div class="toolbar-row">
+                <!-- Tools Section with Dropdowns -->
+                <div class="tools-section">
+                    <button class="tool-btn active" data-tool="select" title="Select"><i class="fas fa-mouse-pointer"></i></button>
+                    
+                    <!-- Pen Tools Dropdown -->
+                    <div class="dropdown-wrapper">
+                        <button class="tool-btn dropdown-toggle" title="Pen Tools">
+                            <i class="fas fa-pen"></i>
+                            <i class="fas fa-caret-down dropdown-arrow"></i>
+                        </button>
+                        <div class="dropdown-menu">
+                            <button class="dropdown-item" data-tool="pen"><i class="fas fa-pen"></i> Pen</button>
+                            <button class="dropdown-item" data-tool="brush"><i class="fas fa-paint-brush"></i> Brush</button>
+                            <button class="dropdown-item" data-tool="eraser"><i class="fas fa-eraser"></i> Eraser</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Shape Tools Dropdown -->
+                    <div class="dropdown-wrapper">
+                        <button class="tool-btn dropdown-toggle" title="Shape Tools">
+                            <i class="far fa-square"></i>
+                            <i class="fas fa-caret-down dropdown-arrow"></i>
+                        </button>
+                        <div class="dropdown-menu">
+                            <button class="dropdown-item" data-tool="line"><i class="fas fa-minus"></i> Line</button>
+                            <button class="dropdown-item" data-tool="rectangle"><i class="far fa-square"></i> Rectangle</button>
+                            <button class="dropdown-item" data-tool="circle"><i class="far fa-circle"></i> Circle</button>
+                        </div>
+                    </div>
+                    
+                    <button class="tool-btn" data-tool="text" title="Text"><i class="fas fa-font"></i></button>
+                </div>
+
+                <!-- Color Stack (Stroke + Fill) -->
+                <div class="v-stack">
+                    <div class="property-row">
+                        <label>Stroke:</label>
+                        <input type="color" id="strokeColor" value="#000000">
+                    </div>
+                    <div class="property-row">
+                        <label>Fill:</label>
+                        <input type="color" id="fillColor" value="#ffffff">
+                    </div>
+                </div>
+
+                <!-- Slider Stack (Width + Opacity) -->
+                <div class="v-stack">
+                    <div class="property-row">
+                        <label>Width:</label>
+                        <input type="range" id="strokeWidth" min="1" max="50" value="2">
+                        <span id="widthDisplay">2px</span>
+                    </div>
+                    <div class="property-row">
+                        <label>Opacity:</label>
+                        <input type="range" id="opacity" min="0" max="1" step="0.1" value="1">
+                        <span id="opacityDisplay">100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Row: Layers and Image -->
+            <div class="toolbar-row-bottom">
+                <!-- Layers Section -->
+                <div class="inline-section">
+                    <label>Layers:</label>
+                    <button id="addLayerBtn" class="btn"><i class="fas fa-plus"></i></button>
+                    <button id="deleteLayerBtn" class="btn"><i class="fas fa-trash"></i></button>
+                    <button id="duplicateLayerBtn" class="btn"><i class="fas fa-copy"></i></button>
+                    <div id="layersList" class="layers-list-inline">
+                        <!-- Layers will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Image Section -->
+                <div class="inline-section">
+                    <label>Image:</label>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                    <button class="btn" onclick="document.getElementById('imageUpload').click()">
+                        <i class="fas fa-image"></i> Upload
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+
+
+            <!-- Canvas Area -->
+            <div class="canvas-container">
+                <div class="canvas-wrapper">
+                    <canvas id="mainCanvas"></canvas>
+                    <canvas id="overlayCanvas"></canvas>
+                </div>
+                <div class="canvas-controls">
+                    <button id="zoomInBtn" class="btn"><i class="fas fa-plus"></i></button>
+                    <span id="zoomLevel">100%</span>
+                    <button id="zoomOutBtn" class="btn"><i class="fas fa-minus"></i></button>
+                    <button id="zoomFitBtn" class="btn">Fit</button>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Modal for text input -->
+    <div id="textModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Add Text</h2>
+            <textarea id="textInput" placeholder="Enter text..."></textarea>
+            <div class="text-options">
+                <select id="fontFamily">
+                    <option value="Arial">Arial</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Helvetica">Helvetica</option>
+                    <option value="Georgia">Georgia</option>
+                </select>
+                <input type="number" id="fontSize" value="16" min="8" max="72">
+                <button id="boldBtn" class="btn"><i class="fas fa-bold"></i></button>
+                <button id="italicBtn" class="btn"><i class="fas fa-italic"></i></button>
+            </div>
+            <div class="modal-actions">
+                <button id="cancelTextBtn" class="btn">Cancel</button>
+                <button id="addTextBtn" class="btn primary">Add Text</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/tools.js"></script>
+    <script src="js/layers.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/canvas.js"></script>
+    <script src="js/imageEditor.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
