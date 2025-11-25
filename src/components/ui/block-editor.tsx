@@ -1,9 +1,9 @@
 import { useCreateBlockNote } from "@blocknote/react";
-import { BlockNoteView, getDefaultReactSlashMenuItems, SuggestionMenuController } from "@blocknote/mantine";
+import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { EquationEditor } from "@/components/ui/equation-editor";
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Subscript, PencilLine } from "lucide-react";
 
 interface BlockEditorProps {
@@ -48,31 +49,6 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
       : undefined,
     uploadFile,
   });
-
-  // Custom slash menu items that will be added to the default menu
-  const customSlashMenuItems = useMemo(() => (editor: BlockNoteEditor) => [
-    ...getDefaultReactSlashMenuItems(editor),
-    {
-      title: "Equation",
-      onItemClick: () => {
-        setIsEquationOpen(true);
-      },
-      aliases: ["math", "latex", "formula", "equation"],
-      group: "Advanced",
-      icon: <Subscript size={18} />,
-      subtext: "Insert a mathematical equation",
-    },
-    {
-      title: "Drawing",
-      onItemClick: () => {
-        setIsDrawingOpen(true);
-      },
-      aliases: ["draw", "illustration", "sketch", "diagram"],
-      group: "Media",
-      icon: <PencilLine size={18} />,
-      subtext: "Create an illustration or diagram",
-    },
-  ], []);
 
   useEffect(() => {
     setEditorInstance(editor);
@@ -164,22 +140,32 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
 
   return (
     <>
+      <div className="flex gap-2 mb-2 border-b pb-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsEquationOpen(true)}
+          className="gap-2"
+        >
+          <Subscript size={16} />
+          Add Equation
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsDrawingOpen(true)}
+          className="gap-2"
+        >
+          <PencilLine size={16} />
+          Add Drawing
+        </Button>
+      </div>
+      
       <BlockNoteView 
         editor={editor} 
         theme="light"
         className="min-h-[600px]"
-        slashMenu={false}
-      >
-        <SuggestionMenuController
-          triggerCharacter={"/"}
-          getItems={async (query) =>
-            customSlashMenuItems(editor).filter((item) =>
-              item.title.toLowerCase().startsWith(query.toLowerCase()) ||
-              item.aliases?.some((alias) => alias.toLowerCase().startsWith(query.toLowerCase()))
-            )
-          }
-        />
-      </BlockNoteView>
+      />
 
       {/* Equation Editor Dialog */}
       <EquationEditor
