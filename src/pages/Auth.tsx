@@ -18,6 +18,7 @@ export default function Auth() {
   const [signUpEmail, setSignUpEmail] = useState("");
   const [signUpPassword, setSignUpPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [schoolName, setSchoolName] = useState("");
   const [role, setRole] = useState("student");
   const [noGhostwritingAccepted, setNoGhostwritingAccepted] = useState(false);
 
@@ -34,7 +35,7 @@ export default function Auth() {
     }
     
     setIsLoading(true);
-    const { error } = await signUp(signUpEmail, signUpPassword, fullName, role);
+    const { error } = await signUp(signUpEmail, signUpPassword, fullName, role, schoolName);
     setIsLoading(false);
 
     if (error) {
@@ -119,6 +120,17 @@ export default function Auth() {
                       placeholder="John Doe"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="school-name">School Name</Label>
+                    <Input
+                      id="school-name"
+                      type="text"
+                      placeholder="International School of..."
+                      value={schoolName}
+                      onChange={(e) => setSchoolName(e.target.value)}
                       required
                     />
                   </div>
