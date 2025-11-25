@@ -6,8 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { BlockEditor } from "@/components/ui/block-editor";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Loader2, Sparkles, Menu, ImagePlus } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Sparkles, Menu, ImagePlus, Download } from "lucide-react";
 import { toast } from "sonner";
+import { exportBlockNoteToPDF } from "@/lib/pdf-export-blocknote";
 import {
   Sheet,
   SheetContent,
@@ -138,6 +139,27 @@ export default function Draft() {
     }
   };
 
+  const handleExportPDF = async () => {
+    if (!content.trim()) {
+      toast.error("Please write some content first");
+      return;
+    }
+
+    try {
+      const blocks = JSON.parse(content);
+      await exportBlockNoteToPDF({
+        title: assignment?.title || "Draft",
+        blocks,
+        subject: assignment?.subject,
+        author: user?.user_metadata?.full_name || "IBDP Student"
+      });
+      toast.success("PDF downloaded successfully!");
+    } catch (error: any) {
+      console.error("Export error:", error);
+      toast.error("Failed to export PDF");
+    }
+  };
+
   const handleEvaluate = async () => {
     if (!content.trim()) {
       toast.error("Please write some content first");
@@ -217,6 +239,14 @@ export default function Draft() {
             <Badge variant="secondary" className="hidden sm:flex">
               Writing
             </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleExportPDF}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              PDF
+            </Button>
             <Button
               variant="ghost"
               size="sm"
