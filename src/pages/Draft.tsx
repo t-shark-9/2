@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { BlockEditor } from "@/components/ui/block-editor";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Loader2, Sparkles, Menu } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Sparkles, Menu, ImagePlus } from "lucide-react";
 import { toast } from "sonner";
 import {
   Sheet,
@@ -324,6 +324,13 @@ export default function Draft() {
 
       {/* Editor */}
       <div className="container max-w-4xl mx-auto px-6 py-8">
+        <div className="mb-4 p-4 bg-muted/50 rounded-lg border border-border flex items-start gap-3">
+          <ImagePlus className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+          <div className="text-sm text-muted-foreground">
+            <p className="font-medium text-foreground mb-1">Image Support Enabled</p>
+            <p>You can add images to your draft by clicking the <strong>"+"</strong> button in the editor and selecting <strong>"Image"</strong>, or simply drag and drop image files into the editor.</p>
+          </div>
+        </div>
         <BlockEditor
           initialContent={content}
           onChange={setContent}
