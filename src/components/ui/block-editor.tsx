@@ -2,7 +2,7 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
-import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
+import { BlockNoteEditor, PartialBlock, DefaultReactSuggestionItem } from "@blocknote/core";
 import { useEffect, useState } from "react";
 import { EquationEditor } from "@/components/ui/equation-editor";
 import {
@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Subscript, PencilLine } from "lucide-react";
 
 interface BlockEditorProps {
   initialContent?: string;
@@ -40,6 +41,30 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
   const [isDrawingOpen, setIsDrawingOpen] = useState(false);
   const [isEquationOpen, setIsEquationOpen] = useState(false);
   const [editorInstance, setEditorInstance] = useState<BlockNoteEditor | null>(null);
+  
+  // Custom slash menu items
+  const getCustomSlashMenuItems = (editor: BlockNoteEditor): DefaultReactSuggestionItem[] => [
+    {
+      title: "Equation",
+      onItemClick: () => {
+        setIsEquationOpen(true);
+      },
+      aliases: ["math", "latex", "formula", "equation"],
+      group: "Advanced",
+      icon: <Subscript size={18} />,
+      subtext: "Insert a mathematical equation",
+    },
+    {
+      title: "Drawing",
+      onItemClick: () => {
+        setIsDrawingOpen(true);
+      },
+      aliases: ["draw", "illustration", "sketch", "diagram"],
+      group: "Media",
+      icon: <PencilLine size={18} />,
+      subtext: "Create an illustration or diagram",
+    },
+  ];
   
   const editor: BlockNoteEditor = useCreateBlockNote({
     initialContent: initialContent 
@@ -143,11 +168,14 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
         theme="light"
         className="min-h-[600px]"
         slashMenu={true}
-      >
-        {/* Add custom slash menu items */}
-        <div data-slash-menu-item="equation" onClick={() => setIsEquationOpen(true)} style={{ display: 'none' }} />
-        <div data-slash-menu-item="drawing" onClick={() => setIsDrawingOpen(true)} style={{ display: 'none' }} />
-      </BlockNoteView>
+        suggestionMenus={{
+          slashMenu: {
+            items: [
+              ...getCustomSlashMenuItems(editor),
+            ],
+          },
+        }}
+      />
 
       {/* Equation Editor Dialog */}
       <EquationEditor
