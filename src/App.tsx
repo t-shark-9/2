@@ -25,7 +25,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter basename={import.meta.env.PROD ? "/IBDP" : "/"}>
+          <BrowserRouter basename={import.meta.env.PROD ? "/2" : "/"}>
             <AuthProvider>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
