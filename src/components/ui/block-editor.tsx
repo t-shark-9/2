@@ -1,8 +1,8 @@
 import { useCreateBlockNote } from "@blocknote/react";
-import { BlockNoteView } from "@blocknote/mantine";
+import { BlockNoteView, getDefaultReactSlashMenuItems } from "@blocknote/mantine";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
-import { BlockNoteEditor, PartialBlock, DefaultReactSuggestionItem } from "@blocknote/core";
+import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import { useEffect, useState } from "react";
 import { EquationEditor } from "@/components/ui/equation-editor";
 import {
@@ -42,8 +42,16 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
   const [isEquationOpen, setIsEquationOpen] = useState(false);
   const [editorInstance, setEditorInstance] = useState<BlockNoteEditor | null>(null);
   
-  // Custom slash menu items
-  const getCustomSlashMenuItems = (editor: BlockNoteEditor): DefaultReactSuggestionItem[] => [
+  const editor: BlockNoteEditor = useCreateBlockNote({
+    initialContent: initialContent 
+      ? (JSON.parse(initialContent) as PartialBlock[])
+      : undefined,
+    uploadFile,
+  });
+
+  // Custom slash menu items that will be added to the default menu
+  const customSlashMenuItems = (editor: BlockNoteEditor) => [
+    ...getDefaultReactSlashMenuItems(editor),
     {
       title: "Equation",
       onItemClick: () => {
@@ -65,13 +73,6 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
       subtext: "Create an illustration or diagram",
     },
   ];
-  
-  const editor: BlockNoteEditor = useCreateBlockNote({
-    initialContent: initialContent 
-      ? (JSON.parse(initialContent) as PartialBlock[])
-      : undefined,
-    uploadFile,
-  });
 
   useEffect(() => {
     setEditorInstance(editor);
@@ -167,15 +168,10 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
         editor={editor} 
         theme="light"
         className="min-h-[600px]"
-        slashMenu={true}
-        suggestionMenus={{
-          slashMenu: {
-            items: [
-              ...getCustomSlashMenuItems(editor),
-            ],
-          },
-        }}
-      />
+        slashMenu={false}
+      >
+        <BlockNoteView.SlashMenu items={customSlashMenuItems(editor)} />
+      </BlockNoteView>
 
       {/* Equation Editor Dialog */}
       <EquationEditor
