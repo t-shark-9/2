@@ -97,52 +97,26 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-2">
-          {/* Create New Assignment */}
-          <Card className="shadow-medium border-primary/20 hover:shadow-strong transition-shadow">
-            <CardHeader>
-              <CardTitle>
-                Start New Assignment
-              </CardTitle>
-              <CardDescription>
-                Begin your writing journey with AI-powered coaching
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                onClick={() => navigate("/assignment/new")}
-                size="lg"
-                className="w-full sm:w-auto"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Assignment
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Drawings/Illustrations */}
-          <Card className="shadow-medium border-accent/20 hover:shadow-strong transition-shadow">
-            <CardHeader>
-              <CardTitle>
-                Create Illustrations
-              </CardTitle>
-              <CardDescription>
-                Draw diagrams and illustrations for your assignments
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                onClick={() => navigate("/drawings")}
-                size="lg"
-                variant="outline"
-                className="w-full sm:w-auto"
-              >
-                <BookOpen className="h-4 w-4 mr-2" />
-                Open Drawing Tool
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        <Card className="shadow-medium border-primary/20 hover:shadow-strong transition-shadow">
+          <CardHeader>
+            <CardTitle>
+              Start New Assignment
+            </CardTitle>
+            <CardDescription>
+              Begin your writing journey with AI-powered coaching
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={() => navigate("/assignment/new")}
+              size="lg"
+              className="w-full sm:w-auto"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Assignment
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* Assignments List */}
         {loading ? (

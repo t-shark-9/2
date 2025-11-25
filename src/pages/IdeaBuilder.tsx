@@ -29,7 +29,6 @@ export default function IdeaBuilder() {
 
   const [currentIdea, setCurrentIdea] = useState("");
   const [thesis, setThesis] = useState("");
-  const [audience, setAudience] = useState("");
   const [constraints, setConstraints] = useState("");
 
   useEffect(() => {
@@ -76,7 +75,6 @@ export default function IdeaBuilder() {
 
       if (planData) {
         setThesis(planData.thesis || "");
-        setAudience(planData.audience || "");
         setConstraints(planData.constraints || "");
       }
     } catch (error: any) {
@@ -129,8 +127,8 @@ export default function IdeaBuilder() {
           .from("plans")
           .update({
             thesis,
-            audience,
             constraints,
+            coaching_response: coaching,
           })
           .eq("id", existingPlan.id);
       } else {
@@ -138,8 +136,8 @@ export default function IdeaBuilder() {
         await supabase.from("plans").insert({
           assignment_id: id,
           thesis,
-          audience,
           constraints,
+          coaching_response: coaching,
         });
       }
 
@@ -242,17 +240,6 @@ export default function IdeaBuilder() {
                     value={thesis}
                     onChange={(e) => setThesis(e.target.value)}
                     rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="audience">Intended Audience</Label>
-                  <Textarea
-                    id="audience"
-                    placeholder="Who are you writing for?"
-                    value={audience}
-                    onChange={(e) => setAudience(e.target.value)}
-                    rows={2}
                   />
                 </div>
 

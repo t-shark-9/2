@@ -180,7 +180,13 @@ export default function CreateAssignment() {
                     <Calendar
                       mode="single"
                       selected={deadline}
-                      onSelect={setDeadline}
+                      onSelect={(date) => {
+                        setDeadline(date);
+                        // Warn if deadline is in the past
+                        if (date && date < new Date()) {
+                          toast.warning("You are setting a deadline in the past.");
+                        }
+                      }}
                       initialFocus
                     />
                   </PopoverContent>
