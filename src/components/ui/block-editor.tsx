@@ -41,7 +41,6 @@ async function uploadFile(file: File): Promise<string> {
 export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquation, onOpenDrawing }: BlockEditorProps) {
   const [isDrawingOpen, setIsDrawingOpen] = useState(false);
   const [isEquationOpen, setIsEquationOpen] = useState(false);
-  const [editorInstance, setEditorInstance] = useState<BlockNoteEditor | null>(null);
   
   const editor: BlockNoteEditor = useCreateBlockNote({
     initialContent: initialContent 
@@ -49,10 +48,6 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
       : undefined,
     uploadFile,
   });
-
-  useEffect(() => {
-    setEditorInstance(editor);
-  }, [editor]);
 
   useEffect(() => {
     if (!onChange) return;
@@ -70,25 +65,23 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'drawing-saved' && event.data.imageData) {
         // Insert the drawing as an image block
-        if (editorInstance) {
-          try {
-            const currentBlock = editorInstance.getTextCursorPosition().block;
-            editorInstance.insertBlocks(
-              [
-                {
-                  type: "image",
-                  props: {
-                    url: event.data.imageData,
-                    caption: "Drawing",
-                  },
+        try {
+          const currentBlock = editor.getTextCursorPosition().block;
+          editor.insertBlocks(
+            [
+              {
+                type: "image",
+                props: {
+                  url: event.data.imageData,
+                  caption: "Drawing",
                 },
-              ],
-              currentBlock,
-              "after"
-            );
-          } catch (error) {
-            console.error('Error inserting drawing:', error);
-          }
+              },
+            ],
+            currentBlock,
+            "after"
+          );
+        } catch (error) {
+          console.error('Error inserting drawing:', error);
         }
         setIsDrawingOpen(false);
       }
@@ -96,15 +89,13 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [editorInstance]);
+  }, [editor]);
 
   const handleEquationInsert = (latex: string, isInline: boolean) => {
-    if (!editorInstance) return;
-    
     try {
       if (isInline) {
         // Insert inline equation as text with special marker
-        editorInstance.insertInlineContent([
+        editor.insertInlineContent([
           {
             type: "text",
             text: `$${latex}$`,
@@ -113,8 +104,8 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
         ]);
       } else {
         // Insert block equation as a paragraph with code styling
-        const currentBlock = editorInstance.getTextCursorPosition().block;
-        editorInstance.insertBlocks(
+        const currentBlock = editor.getTextCursorPosition().block;
+        editor.insertBlocks(
           [
             {
               type: "paragraph",
