@@ -6,23 +6,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { BlockEditor } from "@/components/ui/block-editor";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Loader2, Sparkles, Menu, ChevronDown } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Save, Loader2, Sparkles, ChevronDown, Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 import { exportBlockNoteToPDF } from "@/lib/pdf-export-blocknote";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 
 interface Evaluation {
   overallScore: number;
@@ -54,8 +52,6 @@ export default function Draft() {
   const [saving, setSaving] = useState(false);
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isPlanNotesOpen, setIsPlanNotesOpen] = useState(false);
   const [planNotes, setPlanNotes] = useState<CoachingResponse | null>(null);
 
   useEffect(() => {
@@ -311,8 +307,8 @@ export default function Draft() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top Bar */}
-      <div className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div className="border-b bg-background">
+        <div className="container max-w-full mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button 
               variant="ghost" 
@@ -390,152 +386,168 @@ export default function Draft() {
         </div>
       </div>
 
-      {/* Three-column layout */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar - Planning Notes */}
-        <Sheet open={isPlanNotesOpen} onOpenChange={setIsPlanNotesOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute left-4 top-20 z-20"
-            >
-              <Menu className="h-4 w-4 mr-2" />
-              Planning Notes
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[400px] sm:w-[540px] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Planning Notes</SheetTitle>
-              <SheetDescription>
-                Your notes from the planning phase
-              </SheetDescription>
-            </SheetHeader>
-            {!planNotes ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <p className="text-sm">
-                  No planning notes available for this assignment
-                </p>
+      {/* Resizable three-column layout */}
+      <div className="flex-1 overflow-hidden">
+        <ResizablePanelGroup direction="horizontal">
+          {/* Left Panel - Planning Notes */}
+          <ResizablePanel defaultSize={20} minSize={15} maxSize={35}>
+            <div className="h-full overflow-y-auto bg-muted/30 border-r">
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Lightbulb className="h-5 w-5 text-primary" />
+                  <h2 className="font-semibold">Planning Notes</h2>
+                </div>
+                {!planNotes ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p className="text-sm">
+                      No planning notes available for this assignment
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Clarifying Questions</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-2">
+                          {planNotes.questions.map((question, i) => (
+                            <li key={i} className="text-sm p-2 rounded bg-accent/10 border border-accent/20">
+                              {question}
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Thesis Pattern</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm p-2 rounded bg-primary/10 border border-primary/20 italic">
+                          {planNotes.thesisPattern}
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Evidence Checklist</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-2">
+                          {planNotes.evidenceChecklist.map((item, i) => (
+                            <li key={i} className="text-sm flex items-start gap-2">
+                              <span className="text-success mt-0.5">✓</span>
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="space-y-6 mt-6">
-                <div>
-                  <h3 className="font-semibold mb-3 text-sm">Clarifying Questions</h3>
-                  <ul className="space-y-2">
-                    {planNotes.questions.map((question, i) => (
-                      <li key={i} className="text-sm p-3 rounded-lg bg-accent/10 border border-accent/20">
-                        {question}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            </div>
+          </ResizablePanel>
 
-                <div>
-                  <h3 className="font-semibold mb-2 text-sm">Thesis Pattern</h3>
-                  <p className="text-sm p-3 rounded-lg bg-primary/10 border border-primary/20 italic">
-                    {planNotes.thesisPattern}
-                  </p>
-                </div>
+          <ResizableHandle withHandle />
 
-                <div>
-                  <h3 className="font-semibold mb-3 text-sm">Evidence Checklist</h3>
-                  <ul className="space-y-2">
-                    {planNotes.evidenceChecklist.map((item, i) => (
-                      <li key={i} className="text-sm flex items-start gap-2">
-                        <span className="text-success mt-0.5">✓</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+          {/* Center Panel - Editor */}
+          <ResizablePanel defaultSize={55} minSize={30}>
+            <div className="h-full overflow-y-auto">
+              <div className="container max-w-4xl mx-auto px-6 py-8">
+                <BlockEditor
+                  initialContent={content}
+                  onChange={setContent}
+                  placeholder="Start writing your draft here..."
+                />
               </div>
-            )}
-          </SheetContent>
-        </Sheet>
+            </div>
+          </ResizablePanel>
 
-        {/* Center - Editor */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="container max-w-4xl mx-auto px-6 py-8">
-            <BlockEditor
-              initialContent={content}
-              onChange={setContent}
-              placeholder="Start writing your draft here..."
-            />
-          </div>
-        </div>
+          <ResizableHandle withHandle />
 
-        {/* Right Sidebar - Evaluation */}
-        <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-4 top-20 z-20"
-            >
-              <Menu className="h-4 w-4 mr-2" />
-              Feedback
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="w-[400px] sm:w-[540px] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>AI Evaluation</SheetTitle>
-              <SheetDescription>
-                IBDP standards feedback
-              </SheetDescription>
-            </SheetHeader>
-            {!evaluation ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-sm">
-                  Click "Evaluate" to receive feedback on your writing
-                </p>
+          {/* Right Panel - Evaluation */}
+          <ResizablePanel defaultSize={25} minSize={15} maxSize={35}>
+            <div className="h-full overflow-y-auto bg-muted/30 border-l">
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <h2 className="font-semibold">AI Feedback</h2>
+                </div>
+                {!evaluation ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p className="text-sm">
+                      Click "Evaluate" to receive feedback on your writing
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <Card>
+                      <CardContent className="pt-6">
+                        <div className="text-center pb-4 border-b">
+                          <div className="text-4xl font-bold text-primary">{evaluation.overallScore}/7</div>
+                          <p className="text-sm text-muted-foreground mt-1">IBDP Level</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Strengths</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-2">
+                          {evaluation.strengths.map((strength, i) => (
+                            <li key={i} className="text-sm p-2 rounded bg-success/10 border border-success/20">
+                              {strength}
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Areas for Improvement</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-3">
+                          {evaluation.improvements.map((item, i) => (
+                            <li key={i} className="text-sm p-2 rounded bg-accent/10 border border-accent/20">
+                              <div className="font-medium mb-1">{item.criterion}</div>
+                              <p className="text-muted-foreground mb-2 text-xs">{item.issue}</p>
+                              <p className="text-xs italic">{item.suggestion}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm">Next Steps</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-2">
+                          {evaluation.nextSteps.map((step, i) => (
+                            <li key={i} className="text-sm flex items-start gap-2">
+                              <span className="text-primary mt-0.5">{i + 1}.</span>
+                              <span>{step}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="space-y-6 mt-6">
-                <div className="text-center pb-4 border-b">
-                  <div className="text-4xl font-bold text-primary">{evaluation.overallScore}/7</div>
-                  <p className="text-sm text-muted-foreground mt-1">IBDP Level</p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-3 text-sm">Strengths</h3>
-                  <ul className="space-y-2">
-                    {evaluation.strengths.map((strength, i) => (
-                      <li key={i} className="text-sm p-3 rounded-lg bg-success/10 border border-success/20">
-                        {strength}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-3 text-sm">Areas for Improvement</h3>
-                  <ul className="space-y-3">
-                    {evaluation.improvements.map((item, i) => (
-                      <li key={i} className="text-sm p-3 rounded-lg bg-accent/10 border border-accent/20">
-                        <div className="font-medium mb-1">{item.criterion}</div>
-                        <p className="text-muted-foreground mb-2 text-xs">{item.issue}</p>
-                        <p className="text-xs italic">{item.suggestion}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-3 text-sm">Next Steps</h3>
-                  <ul className="space-y-2">
-                    {evaluation.nextSteps.map((step, i) => (
-                      <li key={i} className="text-sm flex items-start gap-2">
-                        <span className="text-primary mt-0.5">{i + 1}.</span>
-                        <span>{step}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-          </SheetContent>
-        </Sheet>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </div>
   );

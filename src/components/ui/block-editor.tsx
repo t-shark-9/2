@@ -17,6 +17,8 @@ interface BlockEditorProps {
   initialContent?: string;
   onChange?: (content: string) => void;
   placeholder?: string;
+  onOpenEquation?: () => void;
+  onOpenDrawing?: () => void;
 }
 
 async function uploadFile(file: File): Promise<string> {
@@ -34,9 +36,10 @@ async function uploadFile(file: File): Promise<string> {
   });
 }
 
-export function BlockEditor({ initialContent, onChange, placeholder }: BlockEditorProps) {
+export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquation, onOpenDrawing }: BlockEditorProps) {
   const [isDrawingOpen, setIsDrawingOpen] = useState(false);
   const [isEquationOpen, setIsEquationOpen] = useState(false);
+  const [editorInstance, setEditorInstance] = useState<BlockNoteEditor | null>(null);
   
   const editor: BlockNoteEditor = useCreateBlockNote({
     initialContent: initialContent 
@@ -44,6 +47,10 @@ export function BlockEditor({ initialContent, onChange, placeholder }: BlockEdit
       : undefined,
     uploadFile,
   });
+
+  useEffect(() => {
+    setEditorInstance(editor);
+  }, [editor]);
 
   useEffect(() => {
     if (!onChange) return;
@@ -61,90 +68,86 @@ export function BlockEditor({ initialContent, onChange, placeholder }: BlockEdit
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'drawing-saved' && event.data.imageData) {
         // Insert the drawing as an image block
-        const currentBlock = editor.getTextCursorPosition().block;
-        editor.insertBlocks(
-          [
-            {
-              type: "image",
-              props: {
-                url: event.data.imageData,
-                caption: "Drawing",
-              },
-            },
-          ],
-          currentBlock,
-          "after"
-        );
+        if (editorInstance) {
+          try {
+            const currentBlock = editorInstance.getTextCursorPosition().block;
+            editorInstance.insertBlocks(
+              [
+                {
+                  type: "image",
+                  props: {
+                    url: event.data.imageData,
+                    caption: "Drawing",
+                  },
+                },
+              ],
+              currentBlock,
+              "after"
+            );
+          } catch (error) {
+            console.error('Error inserting drawing:', error);
+          }
+        }
         setIsDrawingOpen(false);
       }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [editor]);
+  }, [editorInstance]);
 
   const handleEquationInsert = (latex: string, isInline: boolean) => {
-    const currentBlock = editor.getTextCursorPosition().block;
+    if (!editorInstance) return;
     
-    if (isInline) {
-      // Insert inline equation as text with special marker
-      editor.insertInlineContent([
-        {
-          type: "text",
-          text: `$${latex}$`,
-          styles: { code: true },
-        },
-      ]);
-    } else {
-      // Insert block equation as a paragraph with code styling
-      editor.insertBlocks(
-        [
+    try {
+      if (isInline) {
+        // Insert inline equation as text with special marker
+        editorInstance.insertInlineContent([
           {
-            type: "paragraph",
-            content: [
-              {
-                type: "text",
-                text: `$$${latex}$$`,
-                styles: { code: true },
-              },
-            ],
+            type: "text",
+            text: `$${latex}$`,
+            styles: { code: true },
           },
-        ],
-        currentBlock,
-        "after"
-      );
+        ]);
+      } else {
+        // Insert block equation as a paragraph with code styling
+        const currentBlock = editorInstance.getTextCursorPosition().block;
+        editorInstance.insertBlocks(
+          [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: `$$${latex}$$`,
+                  styles: { code: true },
+                },
+              ],
+            },
+          ],
+          currentBlock,
+          "after"
+        );
+      }
+      setIsEquationOpen(false);
+    } catch (error) {
+      console.error('Error inserting equation:', error);
+      setIsEquationOpen(false);
     }
-    
-    setIsEquationOpen(false);
   };
 
   return (
     <>
-      <div className="relative">
-        <BlockNoteView 
-          editor={editor} 
-          theme="light"
-          className="min-h-[600px]"
-        />
-        
-        {/* Custom buttons to trigger drawing and equation tools */}
-        <div className="absolute top-2 right-2 flex gap-2">
-          <button
-            onClick={() => setIsEquationOpen(true)}
-            className="px-3 py-2 text-sm bg-background border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-            title="Add Equation"
-          >
-            ∑ Equation
-          </button>
-          <button
-            onClick={() => setIsDrawingOpen(true)}
-            className="px-3 py-2 text-sm bg-background border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-            title="Add Drawing"
-          >
-            ✏ Drawing
-          </button>
-        </div>
-      </div>
+      <BlockNoteView 
+        editor={editor} 
+        theme="light"
+        className="min-h-[600px]"
+        slashMenu={true}
+      >
+        {/* Add custom slash menu items */}
+        <div data-slash-menu-item="equation" onClick={() => setIsEquationOpen(true)} style={{ display: 'none' }} />
+        <div data-slash-menu-item="drawing" onClick={() => setIsDrawingOpen(true)} style={{ display: 'none' }} />
+      </BlockNoteView>
 
       {/* Equation Editor Dialog */}
       <EquationEditor
