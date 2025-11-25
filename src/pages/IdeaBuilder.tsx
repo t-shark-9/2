@@ -5,15 +5,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Lightbulb, Loader2, ArrowRight } from "lucide-react";
+import { ArrowLeft, Lightbulb, Loader2, ArrowRight, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface CoachingResponse {
   questions: string[];
   thesisPattern: string;
   evidenceChecklist: string[];
+}
+
+interface PlanSection {
+  id: string;
+  title: string;
+  notes: string;
 }
 
 export default function IdeaBuilder() {
@@ -30,6 +37,9 @@ export default function IdeaBuilder() {
   const [currentIdea, setCurrentIdea] = useState("");
   const [thesis, setThesis] = useState("");
   const [constraints, setConstraints] = useState("");
+  const [sections, setSections] = useState<PlanSection[]>([
+    { id: "1", title: "Key Points", notes: "" },
+  ]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -76,6 +86,9 @@ export default function IdeaBuilder() {
       if (planData) {
         setThesis(planData.thesis || "");
         setConstraints(planData.constraints || "");
+        if (planData.sections) {
+          setSections(planData.sections);
+        }
       }
     } catch (error: any) {
       toast.error("Failed to load assignment");
@@ -129,6 +142,7 @@ export default function IdeaBuilder() {
             thesis,
             constraints,
             coaching_response: coaching,
+            sections,
           })
           .eq("id", existingPlan.id);
       } else {
@@ -138,6 +152,7 @@ export default function IdeaBuilder() {
           thesis,
           constraints,
           coaching_response: coaching,
+          sections,
         });
       }
 
@@ -152,6 +167,27 @@ export default function IdeaBuilder() {
     } catch (error: any) {
       toast.error("Failed to save plan");
     }
+  };
+
+  const addSection = () => {
+    const newSection: PlanSection = {
+      id: Date.now().toString(),
+      title: "",
+      notes: "",
+    };
+    setSections([...sections, newSection]);
+  };
+
+  const removeSection = (sectionId: string) => {
+    if (sections.length > 1) {
+      setSections(sections.filter((s) => s.id !== sectionId));
+    }
+  };
+
+  const updateSection = (sectionId: string, field: keyof PlanSection, value: string) => {
+    setSections(sections.map((s) => 
+      s.id === sectionId ? { ...s, [field]: value } : s
+    ));
   };
 
   if (loading) {
@@ -252,6 +288,54 @@ export default function IdeaBuilder() {
                     onChange={(e) => setConstraints(e.target.value)}
                     rows={2}
                   />
+                </div>
+
+                <div className="space-y-4 mt-6">
+                  <div className="flex items-center justify-between">
+                    <Label>Plan Sections</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addSection}
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add Section
+                    </Button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {sections.map((section) => (
+                      <Card key={section.id} className="border-2">
+                        <CardContent className="pt-4 space-y-3">
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="Section title..."
+                              value={section.title}
+                              onChange={(e) => updateSection(section.id, "title", e.target.value)}
+                              className="font-semibold"
+                            />
+                            {sections.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeSection(section.id)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                          <Textarea
+                            placeholder="Notes and key ideas for this section..."
+                            value={section.notes}
+                            onChange={(e) => updateSection(section.id, "notes", e.target.value)}
+                            rows={3}
+                          />
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
