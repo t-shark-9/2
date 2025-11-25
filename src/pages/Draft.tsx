@@ -6,9 +6,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { BlockEditor } from "@/components/ui/block-editor";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Loader2, Sparkles, Menu, ImagePlus, Download } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Sparkles, Menu, ImagePlus, Download, Palette } from "lucide-react";
 import { toast } from "sonner";
 import { exportBlockNoteToPDF } from "@/lib/pdf-export-blocknote";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
@@ -43,6 +51,7 @@ export default function Draft() {
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isIllustrationOpen, setIsIllustrationOpen] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -239,6 +248,33 @@ export default function Draft() {
             <Badge variant="secondary" className="hidden sm:flex">
               Writing
             </Badge>
+            <Dialog open={isIllustrationOpen} onOpenChange={setIsIllustrationOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                >
+                  <Palette className="h-4 w-4 mr-2" />
+                  Illustrate
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-0">
+                <DialogHeader className="p-4 border-b">
+                  <DialogTitle>Illustration Editor</DialogTitle>
+                  <DialogDescription>
+                    Create drawings and diagrams. Save your illustration to insert it into your draft.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="w-full h-[calc(95vh-100px)] overflow-hidden">
+                  <iframe 
+                    src="/drawings/index.html" 
+                    className="w-full h-full border-0"
+                    title="Illustration Editor"
+                    sandbox="allow-scripts allow-same-origin allow-downloads allow-modals"
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
             <Button
               variant="ghost"
               size="sm"
