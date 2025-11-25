@@ -147,3 +147,25 @@ All colors MUST be HSL.
     box-shadow: var(--shadow-strong);
   }
 }
+
+/* KaTeX equation rendering in BlockNote editor */
+.bn-editor code {
+  font-family: 'KaTeX_Main', 'Times New Roman', serif;
+  background: transparent;
+  padding: 0;
+}
+
+/* Render inline equations */
+.bn-editor code:has-text('$') {
+  @apply bg-muted/30 px-1 rounded;
+}
+
+/* Better equation display */
+.katex-display {
+  @apply my-4;
+}
+
+.katex {
+  font-size: 1.1em;
+}
+

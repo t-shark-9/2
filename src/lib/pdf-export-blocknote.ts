@@ -101,11 +101,14 @@ async function processBlock(
   let currentY = y;
 
   // Extract text from block
-  const text = extractTextFromBlock(block);
+  let text = extractTextFromBlock(block);
   
   if (!text && block.type !== 'image') {
     return currentY + 5; // Empty block, add small space
   }
+
+  // Process LaTeX equations in text
+  text = processLatexInText(text);
 
   // Handle different block types
   switch (block.type) {
@@ -193,11 +196,26 @@ function extractTextFromBlock(block: BlockNoteBlock): string {
   return block.content
     .map(item => {
       if (item.type === 'text' && item.text) {
+        // Keep LaTeX equations in their raw form for PDF rendering
         return item.text;
       }
       return '';
     })
     .join('');
+}
+
+function processLatexInText(text: string): string {
+  // Convert inline equations $...$ to a readable format
+  text = text.replace(/\$([^$]+)\$/g, (match, latex) => {
+    return `[Equation: ${latex}]`;
+  });
+  
+  // Convert block equations $$...$$ to a readable format
+  text = text.replace(/\$\$([^$]+)\$\$/g, (match, latex) => {
+    return `\n[Block Equation:\n${latex}\n]\n`;
+  });
+  
+  return text;
 }
 
 function calculateWordCount(blocks: BlockNoteBlock[]): number {

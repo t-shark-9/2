@@ -4,6 +4,7 @@ import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import { useEffect, useState } from "react";
+import { EquationEditor } from "@/components/ui/equation-editor";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,7 @@ async function uploadFile(file: File): Promise<string> {
 
 export function BlockEditor({ initialContent, onChange, placeholder }: BlockEditorProps) {
   const [isDrawingOpen, setIsDrawingOpen] = useState(false);
+  const [isEquationOpen, setIsEquationOpen] = useState(false);
   
   const editor: BlockNoteEditor = useCreateBlockNote({
     initialContent: initialContent 
@@ -81,6 +83,41 @@ export function BlockEditor({ initialContent, onChange, placeholder }: BlockEdit
     return () => window.removeEventListener('message', handleMessage);
   }, [editor]);
 
+  const handleEquationInsert = (latex: string, isInline: boolean) => {
+    const currentBlock = editor.getTextCursorPosition().block;
+    
+    if (isInline) {
+      // Insert inline equation as text with special marker
+      editor.insertInlineContent([
+        {
+          type: "text",
+          text: `$${latex}$`,
+          styles: { code: true },
+        },
+      ]);
+    } else {
+      // Insert block equation as a paragraph with code styling
+      editor.insertBlocks(
+        [
+          {
+            type: "paragraph",
+            content: [
+              {
+                type: "text",
+                text: `$$${latex}$$`,
+                styles: { code: true },
+              },
+            ],
+          },
+        ],
+        currentBlock,
+        "after"
+      );
+    }
+    
+    setIsEquationOpen(false);
+  };
+
   return (
     <>
       <div className="relative">
@@ -90,15 +127,31 @@ export function BlockEditor({ initialContent, onChange, placeholder }: BlockEdit
           className="min-h-[600px]"
         />
         
-        {/* Custom button to trigger drawing tool */}
-        <button
-          onClick={() => setIsDrawingOpen(true)}
-          className="absolute top-2 right-2 px-3 py-2 text-sm bg-background border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-          title="Add Drawing"
-        >
-          + Drawing
-        </button>
+        {/* Custom buttons to trigger drawing and equation tools */}
+        <div className="absolute top-2 right-2 flex gap-2">
+          <button
+            onClick={() => setIsEquationOpen(true)}
+            className="px-3 py-2 text-sm bg-background border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+            title="Add Equation"
+          >
+            ∑ Equation
+          </button>
+          <button
+            onClick={() => setIsDrawingOpen(true)}
+            className="px-3 py-2 text-sm bg-background border border-border rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+            title="Add Drawing"
+          >
+            ✏ Drawing
+          </button>
+        </div>
       </div>
+
+      {/* Equation Editor Dialog */}
+      <EquationEditor
+        isOpen={isEquationOpen}
+        onClose={() => setIsEquationOpen(false)}
+        onInsert={handleEquationInsert}
+      />
 
       {/* Drawing Dialog */}
       <Dialog open={isDrawingOpen} onOpenChange={setIsDrawingOpen}>
