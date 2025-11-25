@@ -1,9 +1,9 @@
 import { useCreateBlockNote } from "@blocknote/react";
-import { BlockNoteView, getDefaultReactSlashMenuItems } from "@blocknote/mantine";
+import { BlockNoteView, getDefaultReactSlashMenuItems, SuggestionMenuController } from "@blocknote/mantine";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { EquationEditor } from "@/components/ui/equation-editor";
 import {
   Dialog,
@@ -50,7 +50,7 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
   });
 
   // Custom slash menu items that will be added to the default menu
-  const customSlashMenuItems = (editor: BlockNoteEditor) => [
+  const customSlashMenuItems = useMemo(() => (editor: BlockNoteEditor) => [
     ...getDefaultReactSlashMenuItems(editor),
     {
       title: "Equation",
@@ -72,7 +72,7 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
       icon: <PencilLine size={18} />,
       subtext: "Create an illustration or diagram",
     },
-  ];
+  ], []);
 
   useEffect(() => {
     setEditorInstance(editor);
@@ -170,7 +170,15 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
         className="min-h-[600px]"
         slashMenu={false}
       >
-        <BlockNoteView.SlashMenu items={customSlashMenuItems(editor)} />
+        <SuggestionMenuController
+          triggerCharacter={"/"}
+          getItems={async (query) =>
+            customSlashMenuItems(editor).filter((item) =>
+              item.title.toLowerCase().startsWith(query.toLowerCase()) ||
+              item.aliases?.some((alias) => alias.toLowerCase().startsWith(query.toLowerCase()))
+            )
+          }
+        />
       </BlockNoteView>
 
       {/* Equation Editor Dialog */}
