@@ -12,8 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Subscript, PencilLine } from "lucide-react";
-import { SimpleEquationDialog } from "@/components/ui/simple-equation-dialog";
+import { PencilLine } from "lucide-react";
 
 interface BlockEditorProps {
   initialContent?: string;
@@ -40,7 +39,6 @@ async function uploadFile(file: File): Promise<string> {
 
 export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquation, onOpenDrawing }: BlockEditorProps) {
   const [isDrawingOpen, setIsDrawingOpen] = useState(false);
-  const [isEquationOpen, setIsEquationOpen] = useState(false);
   
   const editor: BlockNoteEditor = useCreateBlockNote({
     initialContent: initialContent 
@@ -91,46 +89,9 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
     return () => window.removeEventListener('message', handleMessage);
   }, [editor]);
 
-  const handleAddEquation = () => {
-    setIsEquationOpen(true);
-  };
-
-  const handleEquationInsert = (latex: string) => {
-    try {
-      const currentBlock = editor.getTextCursorPosition().block;
-      editor.insertBlocks(
-        [
-          {
-            type: "paragraph",
-            content: [
-              {
-                type: "text",
-                text: `$$${latex}$$`,
-                styles: { code: true },
-              },
-            ],
-          },
-        ],
-        currentBlock,
-        "after"
-      );
-    } catch (error) {
-      console.error('Error inserting equation:', error);
-    }
-  };
-
   return (
     <>
       <div className="flex gap-2 mb-2 border-b pb-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleAddEquation}
-          className="gap-2"
-        >
-          <Subscript size={16} />
-          Add Equation
-        </Button>
         <Button
           variant="outline"
           size="sm"
@@ -146,13 +107,6 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
         editor={editor} 
         theme="light"
         className="min-h-[600px]"
-      />
-
-      {/* Equation Dialog */}
-      <SimpleEquationDialog
-        isOpen={isEquationOpen}
-        onClose={() => setIsEquationOpen(false)}
-        onInsert={handleEquationInsert}
       />
 
       {/* Drawing Dialog */}
