@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Subscript, PencilLine } from "lucide-react";
+import { SimpleEquationDialog } from "@/components/ui/simple-equation-dialog";
 
 interface BlockEditorProps {
   initialContent?: string;
@@ -39,6 +40,7 @@ async function uploadFile(file: File): Promise<string> {
 
 export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquation, onOpenDrawing }: BlockEditorProps) {
   const [isDrawingOpen, setIsDrawingOpen] = useState(false);
+  const [isEquationOpen, setIsEquationOpen] = useState(false);
   
   const editor: BlockNoteEditor = useCreateBlockNote({
     initialContent: initialContent 
@@ -90,9 +92,10 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
   }, [editor]);
 
   const handleAddEquation = () => {
-    const latex = prompt("Enter LaTeX equation (e.g., x^2 + 1):");
-    if (!latex) return;
-    
+    setIsEquationOpen(true);
+  };
+
+  const handleEquationInsert = (latex: string) => {
     try {
       const currentBlock = editor.getTextCursorPosition().block;
       editor.insertBlocks(
@@ -143,6 +146,13 @@ export function BlockEditor({ initialContent, onChange, placeholder, onOpenEquat
         editor={editor} 
         theme="light"
         className="min-h-[600px]"
+      />
+
+      {/* Equation Dialog */}
+      <SimpleEquationDialog
+        isOpen={isEquationOpen}
+        onClose={() => setIsEquationOpen(false)}
+        onInsert={handleEquationInsert}
       />
 
       {/* Drawing Dialog */}
